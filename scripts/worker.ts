@@ -8,7 +8,7 @@
  * to run this as a separate process alongside the Next.js server.
  *
  * Example cron (every 5 minutes):
- *   */5 * * * * cd /path/to/app && node -r tsconfig-paths/register scripts/worker.js
+ *   * /5 * * * * cd /path/to/app && node -r tsconfig-paths/register scripts/worker.js
  */
 
 import { processSchedules } from "../src/lib/scheduler";
