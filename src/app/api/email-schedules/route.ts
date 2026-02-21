@@ -47,7 +47,7 @@ export async function PUT(req: NextRequest) {
         ...data,
         includeProjectIds: (data.includeProjectIds ?? existing.includeProjectIds) as any,
         outstandingStatuses:
-          data.outstandingStatuses ?? existing.outstandingStatuses,
+          (data.outstandingStatuses ?? existing.outstandingStatuses) as any,
       },
     });
     return NextResponse.json(updated);
