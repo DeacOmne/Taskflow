@@ -436,7 +436,7 @@ function TaskRow({
         <input
           type="date"
           value={formatDateInput(task.dueDate)}
-          onChange={(e) => onUpdate(task.id, { dueDate: e.target.value || null })}
+          onChange={(e) => onUpdate(task.id, { dueDate: (e.target.value ? new Date(e.target.value) : null) as any })}
           className={cn(
             "text-xs border-0 bg-transparent cursor-pointer focus:ring-0 p-0",
             overdue ? "text-red-600 font-medium" : "text-gray-500"
