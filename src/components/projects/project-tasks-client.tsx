@@ -479,7 +479,7 @@ function TaskDetailModal({
       description: description || null,
       status,
       priority,
-      dueDate: dueDate || null,
+      dueDate: (dueDate ? new Date(dueDate) : null) as any,
     });
     setSaving(false);
     if (result) {
