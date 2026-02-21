@@ -45,7 +45,7 @@ export async function PUT(req: NextRequest) {
       where: { id: existing.id },
       data: {
         ...data,
-        includeProjectIds: data.includeProjectIds ?? existing.includeProjectIds,
+        includeProjectIds: (data.includeProjectIds ?? existing.includeProjectIds) as any,
         outstandingStatuses:
           data.outstandingStatuses ?? existing.outstandingStatuses,
       },
