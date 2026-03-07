@@ -3,7 +3,7 @@ import "./globals.css";
 import { ToastProvider } from "@/components/ui/toast-provider";
 
 export const metadata: Metadata = {
-  title: "TaskFlow",
+  title: "Taskli",
   description: "Simple task tracking with email summaries",
 };
 

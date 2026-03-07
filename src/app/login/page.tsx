@@ -4,6 +4,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -37,7 +38,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-blue-600">TaskFlow</h1>
+          <Image src="/Taskli_Logo.png" alt="Taskli" width={160} height={60} className="mx-auto mb-3" priority />
           <p className="text-gray-500 mt-1 text-sm">Sign in to your account</p>
         </div>
 
@@ -82,13 +83,13 @@ export default function LoginPage() {
 
         <p className="text-center text-sm text-gray-500 mt-4">
           Don&apos;t have an account?{" "}
-          <Link href="/signup" className="text-blue-600 hover:underline font-medium">
+          <Link href="/signup" className="hover:underline font-medium" style={{color: "#4caf50"}}>
             Sign up
           </Link>
         </p>
 
         <p className="text-center text-xs text-gray-400 mt-6">
-          Demo: demo@taskflow.app / password123
+          Demo: demo@taskli.app / password123
         </p>
       </div>
     </div>

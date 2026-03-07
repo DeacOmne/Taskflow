@@ -4,6 +4,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 
 const TIMEZONES = [
   "America/Los_Angeles",
@@ -73,7 +74,7 @@ export default function SignupPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-blue-600">TaskFlow</h1>
+          <Image src="/Taskli_Logo.png" alt="Taskli" width={160} height={60} className="mx-auto mb-3" priority />
           <p className="text-gray-500 mt-1 text-sm">Create your account</p>
         </div>
 
@@ -144,7 +145,7 @@ export default function SignupPage() {
 
         <p className="text-center text-sm text-gray-500 mt-4">
           Already have an account?{" "}
-          <Link href="/login" className="text-blue-600 hover:underline font-medium">
+          <Link href="/login" className="hover:underline font-medium" style={{color: "#4caf50"}}>
             Sign in
           </Link>
         </p>

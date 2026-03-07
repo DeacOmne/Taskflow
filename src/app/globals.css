@@ -8,7 +8,8 @@
   }
 
   body {
-    @apply bg-gray-50 text-gray-900 antialiased;
+    @apply bg-gray-50 antialiased;
+    color: #1e2d3d;
   }
 
   * {
@@ -18,11 +19,19 @@
 
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50;
+    --tw-ring-color: #4caf50;
   }
 
   .btn-primary {
-    @apply btn bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800;
+    @apply btn text-white;
+    background-color: #4caf50;
+  }
+  .btn-primary:hover {
+    background-color: #43a047;
+  }
+  .btn-primary:active {
+    background-color: #388e3c;
   }
 
   .btn-secondary {
@@ -42,7 +51,12 @@
   }
 
   .input {
-    @apply w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500;
+    @apply w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-1 disabled:bg-gray-50 disabled:text-gray-500;
+    --tw-ring-color: #4caf50;
+  }
+  .input:focus {
+    border-color: #4caf50;
+    --tw-ring-color: #4caf50;
   }
 
   .label {

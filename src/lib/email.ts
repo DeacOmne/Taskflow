@@ -44,7 +44,7 @@ export function generateEmailContent(
     });
   }
 
-  const subject = `TaskFlow: ${tasks.length} outstanding task${tasks.length !== 1 ? "s" : ""}`;
+  const subject = `Taskli: ${tasks.length} outstanding task${tasks.length !== 1 ? "s" : ""}`;
 
   // Plain text version
   let bodyText = `Outstanding Tasks Summary\n`;
@@ -143,16 +143,16 @@ export function generateEmailContent(
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f9fafb;margin:0;padding:0;">
   <div style="max-width:680px;margin:32px auto;background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
-    <div style="background:#1d4ed8;padding:24px 32px;">
-      <h1 style="color:#ffffff;margin:0;font-size:20px;font-weight:700;">TaskFlow</h1>
+    <div style="background:#1e2d3d;padding:24px 32px;">
+      <h1 style="color:#ffffff;margin:0;font-size:20px;font-weight:700;">Taskli</h1>
       <p style="color:#93c5fd;margin:4px 0 0;font-size:14px;">Outstanding Tasks Summary</p>
     </div>
     <div style="padding:32px;">
       ${summaryHtml}
       ${projectsHtml}
       <div style="margin-top:32px;padding-top:24px;border-top:1px solid #e5e7eb;text-align:center;">
-        <a href="${appUrl}" style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;padding:10px 24px;border-radius:6px;font-weight:500;font-size:14px;">
-          Open TaskFlow
+        <a href="${appUrl}" style="display:inline-block;background:#4caf50;color:#ffffff;text-decoration:none;padding:10px 24px;border-radius:6px;font-weight:500;font-size:14px;">
+          Open Taskli
         </a>
         <p style="margin:16px 0 0;font-size:12px;color:#9ca3af;">
           Sent to ${userEmail} · <a href="${appUrl}/settings" style="color:#6b7280;">Manage email settings</a>
@@ -187,7 +187,7 @@ export async function sendEmail({
       const { Resend } = await import("resend");
       const resend = new Resend(process.env.RESEND_API_KEY);
       await resend.emails.send({
-        from: process.env.EMAIL_FROM || "TaskFlow <noreply@taskflow.app>",
+        from: process.env.EMAIL_FROM || "Taskli <noreply@taskli.app>",
         to,
         subject,
         html: bodyHtml,

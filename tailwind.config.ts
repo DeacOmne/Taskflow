@@ -10,12 +10,14 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          50: "#eff6ff",
-          100: "#dbeafe",
-          500: "#3b82f6",
-          600: "#2563eb",
-          700: "#1d4ed8",
-          900: "#1e3a8a",
+          green: "#4caf50",
+          "green-hover": "#43a047",
+          navy: "#1e2d3d",
+          "navy-hover": "#243548",
+          "navy-border": "#2d4a66",
+          "navy-muted": "#8098b4",
+          orange: "#ff9800",
+          blue: "#2196f3",
         },
       },
     },

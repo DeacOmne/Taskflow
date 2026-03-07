@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Modal } from "./modal";
 import { useToast } from "./toast-provider";
@@ -59,11 +60,11 @@ export default function AppShell({ children, projects, user }: AppShellProps) {
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
       {/* Sidebar */}
-      <aside className="w-60 flex-shrink-0 flex flex-col bg-gray-900 text-white">
+      <aside className="w-60 flex-shrink-0 flex flex-col text-white" style={{backgroundColor: "#1e2d3d"}}>
         {/* Logo */}
-        <div className="px-4 py-4 border-b border-gray-700">
-          <Link href="/" className="text-lg font-bold text-white flex items-center gap-2">
-            <span className="text-blue-400">✦</span> TaskFlow
+        <div className="px-4 py-4" style={{borderBottom: "1px solid #2d4a66"}}>
+          <Link href="/" className="flex items-center">
+            <Image src="/Taskli_Logo.png" alt="Taskli" width={120} height={44} priority />
           </Link>
         </div>
 
@@ -75,8 +76,8 @@ export default function AppShell({ children, projects, user }: AppShellProps) {
               className={cn(
                 "flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors",
                 pathname === "/tasks"
-                  ? "bg-gray-700 text-white"
-                  : "text-gray-400 hover:text-white hover:bg-gray-800"
+                  ? "bg-[#243548] text-white"
+                  : "text-[#8098b4] hover:text-white hover:bg-[#243548]"
               )}
             >
               <span>⊞</span> All Tasks
@@ -86,8 +87,8 @@ export default function AppShell({ children, projects, user }: AppShellProps) {
               className={cn(
                 "flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors",
                 pathname === "/settings"
-                  ? "bg-gray-700 text-white"
-                  : "text-gray-400 hover:text-white hover:bg-gray-800"
+                  ? "bg-[#243548] text-white"
+                  : "text-[#8098b4] hover:text-white hover:bg-[#243548]"
               )}
             >
               <span>⚙</span> Settings
@@ -97,12 +98,12 @@ export default function AppShell({ children, projects, user }: AppShellProps) {
           {/* Projects section */}
           <div className="px-3 mt-4">
             <div className="flex items-center justify-between px-3 mb-1">
-              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              <span className="text-xs font-semibold text-[#8098b4] uppercase tracking-wider">
                 Projects
               </span>
               <button
                 onClick={() => setShowNewProject(true)}
-                className="text-gray-500 hover:text-white text-lg leading-none w-5 h-5 flex items-center justify-center rounded hover:bg-gray-700 transition-colors"
+                className="text-[#8098b4] hover:text-white text-lg leading-none w-5 h-5 flex items-center justify-center rounded hover:bg-[#243548] transition-colors"
                 title="New project"
               >
                 +
@@ -117,8 +118,8 @@ export default function AppShell({ children, projects, user }: AppShellProps) {
                   className={cn(
                     "flex items-center justify-between px-3 py-2 rounded-md text-sm transition-colors group",
                     pathname === `/projects/${project.id}`
-                      ? "bg-blue-600 text-white"
-                      : "text-gray-400 hover:text-white hover:bg-gray-800"
+                      ? "bg-[#4caf50] text-white"
+                      : "text-[#8098b4] hover:text-white hover:bg-[#243548]"
                   )}
                 >
                   <span className="truncate">{project.name}</span>
@@ -127,8 +128,8 @@ export default function AppShell({ children, projects, user }: AppShellProps) {
                       className={cn(
                         "text-xs rounded-full px-1.5 py-0.5 font-medium flex-shrink-0 ml-1",
                         pathname === `/projects/${project.id}`
-                          ? "bg-blue-500 text-white"
-                          : "bg-gray-700 text-gray-400 group-hover:bg-gray-600"
+                          ? "bg-[#43a047] text-white"
+                          : "bg-[#243548] text-[#8098b4] group-hover:bg-[#2d4a66]"
                       )}
                     >
                       {project._count.tasks}
@@ -139,7 +140,7 @@ export default function AppShell({ children, projects, user }: AppShellProps) {
             </div>
 
             {projects.length === 0 && (
-              <p className="px-3 text-xs text-gray-600 py-2">
+              <p className="px-3 text-xs text-[#8098b4] py-2">
                 No projects yet. Click + to add one.
               </p>
             )}
@@ -147,12 +148,12 @@ export default function AppShell({ children, projects, user }: AppShellProps) {
         </nav>
 
         {/* User menu */}
-        <div className="border-t border-gray-700 p-3 relative">
+        <div className="p-3 relative" style={{borderTop: "1px solid #2d4a66"}}>
           <button
             onClick={() => setShowUserMenu(!showUserMenu)}
-            className="w-full flex items-center gap-2 px-2 py-2 rounded-md hover:bg-gray-800 transition-colors text-left"
+            className="w-full flex items-center gap-2 px-2 py-2 rounded-md hover:bg-[#243548] transition-colors text-left"
           >
-            <div className="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-xs font-bold flex-shrink-0">
+            <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0" style={{backgroundColor: "#4caf50"}}>
               {(user.name || user.email)[0].toUpperCase()}
             </div>
             <div className="min-w-0 flex-1">
@@ -160,7 +161,7 @@ export default function AppShell({ children, projects, user }: AppShellProps) {
                 {user.name || user.email}
               </p>
               {user.name && (
-                <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                <p className="text-xs text-[#8098b4] truncate">{user.email}</p>
               )}
             </div>
           </button>
