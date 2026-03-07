@@ -187,7 +187,7 @@ export async function sendEmail({
       const { Resend } = await import("resend");
       const resend = new Resend(process.env.RESEND_API_KEY);
       await resend.emails.send({
-        from: process.env.EMAIL_FROM || "Taskli <noreply@taskli.app>",
+        from: process.env.EMAIL_FROM || "Taskli <hello@daily.taskli.co>",
         to,
         subject,
         html: bodyHtml,
