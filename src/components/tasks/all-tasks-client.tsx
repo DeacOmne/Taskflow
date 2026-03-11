@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { Task, Project } from "@prisma/client";
 import Link from "next/link";
-import { cn, formatDate, formatDateInput, isOverdue, PRIORITY_COLORS, STATUS_COLORS, STATUS_LABELS, PRIORITY_LABELS } from "@/lib/utils";
+import { cn, formatDate, isOverdue, PRIORITY_COLORS, STATUS_COLORS, STATUS_LABELS } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast-provider";
 
 type TaskWithProject = Task & { project: Project };
@@ -12,8 +12,12 @@ interface Props {
   initialTasks: TaskWithProject[];
 }
 
+type SortKey = "title" | "status" | "priority" | "dueDate" | "updatedAt";
+
 const STATUSES = ["BACKLOG", "IN_PROGRESS", "BLOCKED", "DONE"] as const;
 const PRIORITIES = ["P0", "P1", "P2", "P3"] as const;
+const PRIO_ORDER = { P0: 0, P1: 1, P2: 2, P3: 3 };
+const STATUS_ORDER = { BACKLOG: 0, IN_PROGRESS: 1, BLOCKED: 2, DONE: 3 };
 
 export default function AllTasksClient({ initialTasks }: Props) {
   const { toast } = useToast();
@@ -21,8 +25,18 @@ export default function AllTasksClient({ initialTasks }: Props) {
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [priorityFilter, setPriorityFilter] = useState<string>("ALL");
   const [hideDone, setHideDone] = useState(true);
-  const [sort, setSort] = useState("priority");
+  const [sort, setSort] = useState<SortKey>("priority");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [search, setSearch] = useState("");
+
+  function handleSort(col: SortKey) {
+    if (sort === col) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSort(col);
+      setSortDir("asc");
+    }
+  }
 
   const filtered = useMemo(() => {
     let list = [...tasks];
@@ -46,27 +60,31 @@ export default function AllTasksClient({ initialTasks }: Props) {
       list = list.filter((t) => t.priority === priorityFilter);
     }
 
-    const prioOrder = { P0: 0, P1: 1, P2: 2, P3: 3 };
     list.sort((a, b) => {
-      if (sort === "priority") {
-        const pDiff = prioOrder[a.priority as keyof typeof prioOrder] - prioOrder[b.priority as keyof typeof prioOrder];
-        if (pDiff !== 0) return pDiff;
-        if (a.dueDate && b.dueDate) return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
-        if (a.dueDate) return -1;
-        if (b.dueDate) return 1;
-        return 0;
+      let cmp = 0;
+      if (sort === "title") {
+        cmp = a.title.localeCompare(b.title);
+      } else if (sort === "status") {
+        cmp = STATUS_ORDER[a.status as keyof typeof STATUS_ORDER] - STATUS_ORDER[b.status as keyof typeof STATUS_ORDER];
+      } else if (sort === "priority") {
+        cmp = PRIO_ORDER[a.priority as keyof typeof PRIO_ORDER] - PRIO_ORDER[b.priority as keyof typeof PRIO_ORDER];
+        if (cmp === 0) {
+          if (a.dueDate && b.dueDate) cmp = new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+          else if (a.dueDate) cmp = -1;
+          else if (b.dueDate) cmp = 1;
+        }
+      } else if (sort === "dueDate") {
+        if (a.dueDate && b.dueDate) cmp = new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+        else if (a.dueDate) cmp = -1;
+        else if (b.dueDate) cmp = 1;
+      } else if (sort === "updatedAt") {
+        cmp = new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
       }
-      if (sort === "dueDate") {
-        if (a.dueDate && b.dueDate) return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
-        if (a.dueDate) return -1;
-        if (b.dueDate) return 1;
-        return 0;
-      }
-      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+      return sortDir === "asc" ? cmp : -cmp;
     });
 
     return list;
-  }, [tasks, statusFilter, priorityFilter, hideDone, sort, search]);
+  }, [tasks, statusFilter, priorityFilter, hideDone, sort, sortDir, search]);
 
   const overdueCount = tasks.filter(
     (t) => t.dueDate && isOverdue(t.dueDate) && t.status !== "DONE"
@@ -84,6 +102,25 @@ export default function AllTasksClient({ initialTasks }: Props) {
     } else {
       toast("Failed to update", "error");
     }
+  }
+
+  function SortTh({ col, label, className }: { col: SortKey; label: string; className?: string }) {
+    const active = sort === col;
+    return (
+      <th
+        className={cn(
+          "text-left px-2 py-2 text-xs font-medium cursor-pointer select-none hover:text-gray-800 whitespace-nowrap transition-colors",
+          active ? "text-gray-800" : "text-gray-500",
+          className
+        )}
+        onClick={() => handleSort(col)}
+      >
+        {label}
+        <span className={cn("ml-1", active ? "text-gray-600" : "text-gray-300")}>
+          {active ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
+        </span>
+      </th>
+    );
   }
 
   return (
@@ -136,15 +173,6 @@ export default function AllTasksClient({ initialTasks }: Props) {
             <input type="checkbox" checked={hideDone} onChange={(e) => setHideDone(e.target.checked)} className="rounded" />
             Hide done
           </label>
-
-          <div className="flex items-center gap-1 ml-auto">
-            <span className="text-sm text-gray-500">Sort:</span>
-            <select className="text-sm border border-gray-200 rounded-md px-2 py-1 bg-white" value={sort} onChange={(e) => setSort(e.target.value)}>
-              <option value="priority">Priority</option>
-              <option value="dueDate">Due date</option>
-              <option value="updatedAt">Last updated</option>
-            </select>
-          </div>
         </div>
       </div>
 
@@ -159,11 +187,12 @@ export default function AllTasksClient({ initialTasks }: Props) {
             <thead className="bg-gray-50 border-b">
               <tr>
                 <th className="text-left px-4 py-2 text-xs text-gray-500 font-medium w-8"></th>
-                <th className="text-left px-2 py-2 text-xs text-gray-500 font-medium">Task</th>
+                <SortTh col="title" label="Task" />
                 <th className="text-left px-2 py-2 text-xs text-gray-500 font-medium w-36">Project</th>
-                <th className="text-left px-2 py-2 text-xs text-gray-500 font-medium w-32">Status</th>
-                <th className="text-left px-2 py-2 text-xs text-gray-500 font-medium w-20">Priority</th>
-                <th className="text-left px-2 py-2 text-xs text-gray-500 font-medium w-28">Due</th>
+                <SortTh col="status" label="Status" className="w-32" />
+                <SortTh col="priority" label="Priority" className="w-20" />
+                <SortTh col="dueDate" label="Due" className="w-28" />
+                <SortTh col="updatedAt" label="Updated" className="w-28" />
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -217,6 +246,9 @@ export default function AllTasksClient({ initialTasks }: Props) {
                       ) : (
                         <span className="text-xs text-gray-300">—</span>
                       )}
+                    </td>
+                    <td className="px-2 py-3">
+                      <span className="text-xs text-gray-500">{formatDate(task.updatedAt)}</span>
                     </td>
                   </tr>
                 );

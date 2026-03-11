@@ -62,9 +62,11 @@ export default function AppShell({ children, projects, user }: AppShellProps) {
       {/* Sidebar */}
       <aside className="w-60 flex-shrink-0 flex flex-col text-white" style={{backgroundColor: "#1e2d3d"}}>
         {/* Logo */}
-        <div className="px-4 py-4" style={{borderBottom: "1px solid #2d4a66"}}>
-          <Link href="/" className="flex items-center">
-            <Image src="/Taskli_Logo.png" alt="Taskli" width={120} height={44} priority />
+        <div className="flex items-center justify-center px-4 py-5" style={{backgroundColor: "#1e2d3d"}}>
+          <Link href="/">
+            <div className="rounded-full bg-white flex items-center justify-center overflow-hidden" style={{width: 110, height: 110}}>
+              <Image src="/Taskli_Logo.png" alt="Taskli" width={90} height={90} priority />
+            </div>
           </Link>
         </div>
 
@@ -81,17 +83,6 @@ export default function AppShell({ children, projects, user }: AppShellProps) {
               )}
             >
               <span>⊞</span> All Tasks
-            </Link>
-            <Link
-              href="/settings"
-              className={cn(
-                "flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors",
-                pathname === "/settings"
-                  ? "bg-[#243548] text-white"
-                  : "text-[#8098b4] hover:text-white hover:bg-[#243548]"
-              )}
-            >
-              <span>⚙</span> Settings
             </Link>
           </div>
 

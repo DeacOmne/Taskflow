@@ -15,8 +15,12 @@ interface Props {
   openTaskId?: string;
 }
 
+type SortKey = "title" | "status" | "priority" | "dueDate" | "updatedAt";
+
 const STATUSES = ["BACKLOG", "IN_PROGRESS", "BLOCKED", "DONE"] as const;
 const PRIORITIES = ["P0", "P1", "P2", "P3"] as const;
+const PRIO_ORDER = { P0: 0, P1: 1, P2: 2, P3: 3 };
+const STATUS_ORDER = { BACKLOG: 0, IN_PROGRESS: 1, BLOCKED: 2, DONE: 3 };
 
 export default function ProjectTasksClient({ project, initialTasks, openTaskId }: Props) {
   const router = useRouter();
@@ -26,13 +30,23 @@ export default function ProjectTasksClient({ project, initialTasks, openTaskId }
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [priorityFilter, setPriorityFilter] = useState<string>("ALL");
   const [hideDone, setHideDone] = useState(true);
-  const [sort, setSort] = useState("priority");
+  const [sort, setSort] = useState<SortKey>("priority");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [quickAdd, setQuickAdd] = useState("");
   const [addingTask, setAddingTask] = useState(false);
   const [editingTask, setEditingTask] = useState<TaskWithProject | null>(null);
   const [showProjectMenu, setShowProjectMenu] = useState(false);
   const [archiving, setArchiving] = useState(false);
   const [showDeleteProject, setShowDeleteProject] = useState(false);
+
+  function handleSort(col: SortKey) {
+    if (sort === col) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSort(col);
+      setSortDir("asc");
+    }
+  }
 
   // Open task from URL param
   useEffect(() => {
@@ -55,28 +69,31 @@ export default function ProjectTasksClient({ project, initialTasks, openTaskId }
       list = list.filter((t) => t.priority === priorityFilter);
     }
 
-    const prioOrder = { P0: 0, P1: 1, P2: 2, P3: 3 };
     list.sort((a, b) => {
-      if (sort === "priority") {
-        const pDiff = prioOrder[a.priority as keyof typeof prioOrder] - prioOrder[b.priority as keyof typeof prioOrder];
-        if (pDiff !== 0) return pDiff;
-        if (a.dueDate && b.dueDate) return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
-        if (a.dueDate) return -1;
-        if (b.dueDate) return 1;
-        return 0;
+      let cmp = 0;
+      if (sort === "title") {
+        cmp = a.title.localeCompare(b.title);
+      } else if (sort === "status") {
+        cmp = STATUS_ORDER[a.status as keyof typeof STATUS_ORDER] - STATUS_ORDER[b.status as keyof typeof STATUS_ORDER];
+      } else if (sort === "priority") {
+        cmp = PRIO_ORDER[a.priority as keyof typeof PRIO_ORDER] - PRIO_ORDER[b.priority as keyof typeof PRIO_ORDER];
+        if (cmp === 0) {
+          if (a.dueDate && b.dueDate) cmp = new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+          else if (a.dueDate) cmp = -1;
+          else if (b.dueDate) cmp = 1;
+        }
+      } else if (sort === "dueDate") {
+        if (a.dueDate && b.dueDate) cmp = new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+        else if (a.dueDate) cmp = -1;
+        else if (b.dueDate) cmp = 1;
+      } else if (sort === "updatedAt") {
+        cmp = new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
       }
-      if (sort === "dueDate") {
-        if (a.dueDate && b.dueDate) return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
-        if (a.dueDate) return -1;
-        if (b.dueDate) return 1;
-        return prioOrder[a.priority as keyof typeof prioOrder] - prioOrder[b.priority as keyof typeof prioOrder];
-      }
-      // updatedAt
-      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+      return sortDir === "asc" ? cmp : -cmp;
     });
 
     return list;
-  }, [tasks, statusFilter, priorityFilter, hideDone, sort]);
+  }, [tasks, statusFilter, priorityFilter, hideDone, sort, sortDir]);
 
   async function quickAddTask(e: React.FormEvent) {
     e.preventDefault();
@@ -277,24 +294,12 @@ export default function ProjectTasksClient({ project, initialTasks, openTaskId }
           Hide done
         </label>
 
-        <div className="flex items-center gap-1 ml-auto">
-          <span className="text-sm text-gray-500">Sort:</span>
-          <select
-            className="text-sm border border-gray-200 rounded-md px-2 py-1 bg-white"
-            value={sort}
-            onChange={(e) => setSort(e.target.value)}
-          >
-            <option value="priority">Priority</option>
-            <option value="dueDate">Due date</option>
-            <option value="updatedAt">Last updated</option>
-          </select>
-        </div>
       </div>
 
       {/* Tasks list */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto p-4">
         {filtered.length === 0 ? (
-          <div className="p-12 text-center text-gray-400">
+          <div className="card p-12 text-center text-gray-400">
             {tasks.length === 0 ? (
               <>
                 <p className="text-lg mb-1">No tasks yet</p>
@@ -305,15 +310,38 @@ export default function ProjectTasksClient({ project, initialTasks, openTaskId }
             )}
           </div>
         ) : (
+          <div className="card overflow-hidden">
           <table className="w-full">
             <thead className="sticky top-0 bg-gray-50 border-b">
               <tr>
                 <th className="text-left px-4 py-2 text-xs text-gray-500 font-medium w-8"></th>
-                <th className="text-left px-2 py-2 text-xs text-gray-500 font-medium">Task</th>
-                <th className="text-left px-2 py-2 text-xs text-gray-500 font-medium w-32">Status</th>
-                <th className="text-left px-2 py-2 text-xs text-gray-500 font-medium w-20">Priority</th>
-                <th className="text-left px-2 py-2 text-xs text-gray-500 font-medium w-28">Due date</th>
-                <th className="text-left px-4 py-2 text-xs text-gray-500 font-medium w-24">Updated</th>
+                {(
+                  [
+                    { col: "title" as SortKey, label: "Task", className: "" },
+                    { col: "status" as SortKey, label: "Status", className: "w-32" },
+                    { col: "priority" as SortKey, label: "Priority", className: "w-20" },
+                    { col: "dueDate" as SortKey, label: "Due date", className: "w-28" },
+                    { col: "updatedAt" as SortKey, label: "Updated", className: "w-24" },
+                  ] as const
+                ).map(({ col, label, className }) => {
+                  const active = sort === col;
+                  return (
+                    <th
+                      key={col}
+                      onClick={() => handleSort(col)}
+                      className={cn(
+                        "text-left px-2 py-2 text-xs font-medium cursor-pointer select-none hover:text-gray-800 whitespace-nowrap transition-colors",
+                        active ? "text-gray-800" : "text-gray-500",
+                        className
+                      )}
+                    >
+                      {label}
+                      <span className={cn("ml-1", active ? "text-gray-600" : "text-gray-300")}>
+                        {active ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
+                      </span>
+                    </th>
+                  );
+                })}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -327,6 +355,7 @@ export default function ProjectTasksClient({ project, initialTasks, openTaskId }
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 
@@ -415,38 +444,25 @@ function TaskRow({
         </select>
       </td>
 
-      {/* Priority inline */}
-      <td className="px-2 py-3" onClick={(e) => e.stopPropagation()}>
-        <select
-          value={task.priority}
-          onChange={(e) => onUpdate(task.id, { priority: e.target.value as Task["priority"] })}
-          className={cn(
-            "text-xs rounded-md px-2 py-1 border font-medium cursor-pointer focus:ring-1 focus:ring-blue-500",
-            PRIORITY_COLORS[task.priority]
-          )}
-        >
-          {(["P0", "P1", "P2", "P3"] as const).map((p) => (
-            <option key={p} value={p}>{p}</option>
-          ))}
-        </select>
+      {/* Priority */}
+      <td className="px-2 py-3">
+        <span className={cn("badge", PRIORITY_COLORS[task.priority])}>{task.priority}</span>
       </td>
 
-      {/* Due date inline */}
-      <td className="px-2 py-3" onClick={(e) => e.stopPropagation()}>
-        <input
-          type="date"
-          value={formatDateInput(task.dueDate)}
-          onChange={(e) => onUpdate(task.id, { dueDate: (e.target.value ? new Date(e.target.value) : null) as any })}
-          className={cn(
-            "text-xs border-0 bg-transparent cursor-pointer focus:ring-0 p-0",
-            overdue ? "text-red-600 font-medium" : "text-gray-500"
-          )}
-        />
+      {/* Due date */}
+      <td className="px-2 py-3">
+        {task.dueDate ? (
+          <span className={cn("text-xs", overdue ? "text-red-600 font-medium" : "text-gray-500")}>
+            {overdue && "⚠ "}{formatDate(task.dueDate)}
+          </span>
+        ) : (
+          <span className="text-xs text-gray-300">—</span>
+        )}
       </td>
 
       {/* Updated */}
-      <td className="px-4 py-3">
-        <span className="text-xs text-gray-400">{formatDate(task.updatedAt)}</span>
+      <td className="px-2 py-3">
+        <span className="text-xs text-gray-500">{formatDate(task.updatedAt)}</span>
       </td>
     </tr>
   );
