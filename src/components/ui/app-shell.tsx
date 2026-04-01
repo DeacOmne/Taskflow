@@ -145,7 +145,7 @@ export default function AppShell({ children, projects, user }: AppShellProps) {
             className="w-full flex items-center gap-2 px-2 py-2 rounded-md hover:bg-[#243548] transition-colors text-left"
           >
             <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0" style={{backgroundColor: "#4caf50"}}>
-              {(user.name || user.email)[0].toUpperCase()}
+              {(user?.name || user?.email || "?")[0].toUpperCase()}
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm text-white truncate font-medium">

@@ -1,13 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const resetSuccess = searchParams.get("reset") === "1";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -44,6 +46,11 @@ export default function LoginPage() {
 
         <div className="card p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
+            {resetSuccess && (
+              <div className="rounded-md bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
+                Password reset successfully. Sign in with your new password.
+              </div>
+            )}
             {error && (
               <div className="rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
                 {error}
@@ -75,6 +82,12 @@ export default function LoginPage() {
               />
             </div>
 
+            <div className="text-right">
+              <Link href="/forgot-password" className="text-xs text-gray-500 hover:underline">
+                Forgot password?
+              </Link>
+            </div>
+
             <button type="submit" className="btn-primary w-full" disabled={loading}>
               {loading ? "Signing in…" : "Sign in"}
             </button>
@@ -93,5 +106,13 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
   );
 }

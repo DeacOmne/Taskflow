@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { generateEmailContent, sendEmail } from "@/lib/email";
 import { toZonedTime, fromZonedTime } from "date-fns-tz";
-import { format } from "date-fns";
 
 export async function processSchedules(): Promise<void> {
   const now = new Date();
@@ -39,7 +38,7 @@ async function evaluateSchedule(
 
   // Convert back to UTC
   const windowStartUtc = fromZonedTime(windowStartInTz, tz);
-  const windowEndUtc = new Date(windowStartUtc.getTime() + 5 * 60 * 1000); // 5 min window
+  const windowEndUtc = new Date(windowStartUtc.getTime() + 10 * 60 * 1000); // 10 min window
 
   // Check if we're in the window
   if (now < windowStartUtc || now > windowEndUtc) {
@@ -54,29 +53,14 @@ async function evaluateSchedule(
     }
   }
 
-  // Avoid duplicate sends: check lastSentAt
+  // Avoid duplicate sends: skip if lastSentAt is within the last 23 hours
   if (schedule.lastSentAt) {
-    const lastSentInTz = toZonedTime(schedule.lastSentAt, tz);
-    const lastSentDay = format(lastSentInTz, "yyyy-MM-dd");
-    const todayInTz = format(nowInTz, "yyyy-MM-dd");
-
-    if (schedule.cadence === "DAILY" && lastSentDay === todayInTz) {
+    const millisSinceLastSent = now.getTime() - schedule.lastSentAt.getTime();
+    if (millisSinceLastSent < 23 * 60 * 60 * 1000) {
       console.log(
-        `[Scheduler] Already sent today for schedule ${schedule.id}, skipping`
+        `[Scheduler] Already sent within last 23h for schedule ${schedule.id}, skipping`
       );
       return;
-    }
-
-    if (schedule.cadence === "WEEKLY") {
-      // Check if sent this week (same week + day)
-      const lastSentWeek = format(lastSentInTz, "yyyy-ww");
-      const thisWeek = format(nowInTz, "yyyy-ww");
-      if (lastSentWeek === thisWeek && lastSentDay === todayInTz) {
-        console.log(
-          `[Scheduler] Already sent this week for schedule ${schedule.id}, skipping`
-        );
-        return;
-      }
     }
   }
 
